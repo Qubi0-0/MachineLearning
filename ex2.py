@@ -51,11 +51,11 @@ class QLearning:
     def find_best_action(self, state):
         return np.argmax(self.q_table[state, :])
 
-    # def choose_action(self, state, epsilon=0.1):
-    #     if random.random() < epsilon:
-    #         return random.randint(0, self.num_actions - 1)  # Explore
-    #     else:
-    #         return np.argmax(self.q_table[state, :])  # Exploit
+    def choose_action(self, state, epsilon=0.1):
+        if random.random() < epsilon:
+            return random.randint(0, self.num_actions - 1)  # Explore
+        else:
+            return np.argmax(self.q_table[state, :])  # Exploit
         
     def run(self, starting_state = 1, num_steps = 1000):
         state = starting_state
@@ -69,29 +69,32 @@ class QLearning:
             self.update_q_table(state, action, next_state, reward)
             state = next_state
 
+    def create_heatmap(self):
+        
+        plt.figure(figsize=(10, 10))
+        plt.imshow(np.max(self.q_table, axis=1).reshape(10, 10), cmap='coolwarm', origin='upper', aspect='auto')
+        plt.colorbar(label='Max Q-Value')
+        plt.xlabel('Column')
+        plt.ylabel('Row')
+        plt.title('Heatmap of Maximum Q-Values per State')
+        plt.xticks(np.arange(0, 10))
+        plt.yticks(np.arange(0, 10))
+        plt.grid(visible=True, linestyle='--', alpha=0.5)
+        plt.show()
 
 if __name__ == "__main__":
     q_learning = QLearning()
     q_learning.run( starting_state= 1, num_steps= 20000)
 
     best_action_matrix = np.argmax(q_learning.q_table, axis=1)
+    q_learning.create_heatmap()
 
-    # Create a heatmap of the maximum Q-values
-    plt.figure(figsize=(10, 10))
-    plt.imshow(np.max(q_learning.q_table, axis=1).reshape(10, 10), cmap='coolwarm', origin='lower', aspect='auto')
-    plt.colorbar(label='Max Q-Value')
-    plt.xlabel('Column')
-    plt.ylabel('Row')
-    plt.title('Heatmap of Maximum Q-Values per State')
-    plt.xticks(np.arange(0, 10))
-    plt.yticks(np.arange(0, 10))
-    plt.grid(visible=True, linestyle='--', alpha=0.5)
-    plt.show()
 
-    # Display the best action for each state
-    print("Best Action for Each State:")
-    for row in range(10):
-        for col in range(10):
-            state = row * 10 + col
-            action = best_action_matrix[state]
-            print(f"State {state}: Best Action - {Actions(action).name}")
+
+    # # Display the best action for each state
+    # print("Best Action for Each State:")
+    # for row in range(10):
+    #     for col in range(10):
+    #         state = row * 10 + col
+    #         action = best_action_matrix[state]
+    #         print(f"State {state}: Best Action - {Actions(action).name}")
