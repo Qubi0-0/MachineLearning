@@ -72,7 +72,7 @@ class QLearning:
 
 
     def create_heatmap(self):
-        # print(self.q_table)
+        print(self.q_table)
         plt.figure(figsize=(10, 10))
         plt.imshow(np.max(self.q_table, axis=1).reshape(10, 10), cmap='hot', origin='upper', aspect='auto')
         plt.colorbar(label='Max Q-Value')
@@ -161,5 +161,5 @@ if __name__ == "__main__":
     # Print average and standard deviation of run-times
     avg_runtime = np.mean(run_times)
     std_dev_runtime = np.std(run_times)
-    print(f"Average Run-time: {avg_runtime:.2f} seconds")
-    print(f"Standard Deviation of Run-times: {std_dev_runtime:.2f} seconds")
+    print(f"Average Run-time: {avg_runtime:.6f} seconds")
+    print(f"Standard Deviation of Run-times: {std_dev_runtime:.6f} seconds")
