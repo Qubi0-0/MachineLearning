@@ -54,7 +54,7 @@ class QLearning:
         else:
             return np.argmax(self.q_table[state, :])  # Exploit
         
-    def run(self, starting_state = 0, num_steps = 1000, update = True, random_action = True):
+    def run(self, starting_state = 1, num_steps = 1000, update = True, random_action = True):
         state = starting_state
         for _ in (range(num_steps)):
             if random_action:
@@ -84,8 +84,8 @@ class QLearning:
 
     def test(self):
         """A test consists of running the system for 1000 steps using the current Q table (without
-changing it) and always choosing the best action at each step. Measure the average
-reward per step in these 1000 steps."""
+            changing it) and always choosing the best action at each step. Measure the average
+            reward per step in these 1000 steps."""
         state = 0
         rewards = []
         num_steps = 1000
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
         avg_rewards.append(rewards_per_experiment)
 
-    q_learning.create_heatmap()
+    fig = q_learning.create_heatmap()
     # Convert avg_rewards into a NumPy array
     avg_rewards = np.array(avg_rewards)
 
