@@ -35,7 +35,7 @@ class QLearning:
         return random.choice(list(Actions))
 
     def reward(self, state):
-        if state == 99:
+        if state == 100:
             return 100
         else:
             return 0
@@ -55,6 +55,7 @@ class QLearning:
             return np.argmax(self.q_table[state, :])  # Exploit
         
     def run(self, starting_state = 1, num_steps = 1000, update = True, random_action = True):
+        reward = 0
         state = starting_state
         for _ in (range(num_steps)):
             if random_action:
@@ -63,16 +64,17 @@ class QLearning:
                 action = self.choose_action(state)
             reward = self.reward(state)
             next_state = self.state_transition(state, action)
-            if next_state == 100:
-                next_state = 99
             if update:
-                self.update_q_table(state, action, next_state, reward)
+                self.update_q_table(state -1, action, next_state -1, reward)
             state = next_state
+            if reward == 100:
+                break
+
 
     def create_heatmap(self):
         # print(self.q_table)
         plt.figure(figsize=(10, 10))
-        plt.imshow(np.max(self.q_table, axis=1).reshape(10, 10), cmap='coolwarm', origin='upper', aspect='auto')
+        plt.imshow(np.max(self.q_table, axis=1).reshape(10, 10), cmap='hot', origin='upper', aspect='auto')
         plt.colorbar(label='Max Q-Value')
         plt.xlabel('Column')
         plt.ylabel('Row')
@@ -86,17 +88,18 @@ class QLearning:
         """A test consists of running the system for 1000 steps using the current Q table (without
             changing it) and always choosing the best action at each step. Measure the average
             reward per step in these 1000 steps."""
-        state = 0
+        state = 1
+        reward = 0
         rewards = []
         num_steps = 1000
-        for _ in (range(num_steps)):
+        for _ in (range(1, num_steps + 1)):
             action = self.choose_action(state)
             reward = self.reward(state)
             rewards.append(reward)
             next_state = self.state_transition(state, action)
-            if next_state == 100:
-                next_state = 99
             state = next_state
+            if reward == 100:
+                break
 
         avg_reward = np.mean(rewards)
         return avg_reward
@@ -107,7 +110,6 @@ if __name__ == "__main__":
     stop_points = [100, 200, 500, 600, 700, 800, 900, 1000, 2500,
                     5000, 7500, 10000, 12500, 15000, 17500, 20000]
     num_experiments = 30  # Number of experiments
-
     avg_rewards = []
     run_times = []  # List to store run-times
 
@@ -116,7 +118,7 @@ if __name__ == "__main__":
 
         for point in stop_points:
             start_time = time.time()  # Record start time
-            q_learning.run(starting_state=0, num_steps=point)
+            q_learning.run(starting_state= 0, num_steps=point)
             end_time = time.time()  # Record end time
             run_time = end_time - start_time  # Calculate run-time
             run_times.append(run_time)
