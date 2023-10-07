@@ -44,25 +44,30 @@ class QLearning:
 
     def update_q_table(self, state, action, next_state, reward):
         best_next_action = np.argmax(self.q_table[next_state, :])
-        self.q_table[state, action.value] = (1 - self.alpha) * self.q_table[state, action.value] + \
+        self.q_table[state, action] = (1 - self.alpha) * self.q_table[state, action] + \
             self.alpha * (reward + self.gamma * self.q_table[next_state, best_next_action])
 
     def find_best_action(self, state):
         return np.argmax(self.q_table[state, :])
 
-    def choose_action(self, state, epsilon=0.1):
-        if random.random() < epsilon:
+    def choose_action(self, state, greed= 0.1):
+        if random.random() < greed:
             return random.randint(0, self.num_actions - 1)  # Explore
         else:
             max_q_value = np.max(self.q_table[state -1, :])
             best_actions = [action for action, q_value in enumerate(self.q_table[state -1, :]) if q_value == max_q_value]
             return random.choice(best_actions)  # Exploit among best actions
 
+    # def choose_action(self, state):
+    #     max_q_value = np.max(self.q_table[state -1, :])
+    #     best_actions = [action for action, q_value in enumerate(self.q_table[state -1, :]) if q_value == max_q_value]
+    #     return random.choice(best_actions)  # Exploit among best actions
+
         
     def run(self, starting_state=1, num_steps=1000, update=True, random_action=True):
         reward = 0
         state = starting_state
-
+        heat_maps = []
         run_times = []  # List to store run-times
         rewards_per_experiment = []
         start_time = time.time()  # Record start time
@@ -83,12 +88,16 @@ class QLearning:
                 run_time = end_time - start_time  # Calculate run-time
                 run_times.append(run_time)
                 start_time = time.time()  # Reset start time
+                heat_map = q_learning.q_table.copy()
+                heat_maps.append(heat_map)
+            if reward == 100:
+                state = 1
 
         # Fill in missing reward values with zeros
         while len(rewards_per_experiment) < len(self.stop_points):
             rewards_per_experiment.append(0)
 
-        return rewards_per_experiment, run_times
+        return rewards_per_experiment, run_times, heat_maps
 
 
     def test(self):
@@ -104,7 +113,8 @@ class QLearning:
             rewards.append(reward)
             next_state = self.state_transition(state, action)
             state = next_state
-
+            if reward == 100:
+                state = 1
         avg_reward = np.mean(rewards)
         return avg_reward
 
@@ -115,7 +125,7 @@ def create_heatmap(heat_map, ax):
     ax.set_yticks(np.arange(0, 10))
     ax.grid(visible=True, linestyle='--', alpha=0.5)
 
-def plot_heatmaps(list_of_heatmaps, num_rows=5, num_cols=6):
+def plot_heatmaps(list_of_heatmaps, num_rows=4, num_cols=4):
     fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 12))
 
     for i, heatmap in enumerate(list_of_heatmaps):
@@ -124,7 +134,7 @@ def plot_heatmaps(list_of_heatmaps, num_rows=5, num_cols=6):
         ax = axs[row, col]
 
         create_heatmap(heatmap, ax)
-        ax.set_title(f'Heatmap {i+1}')
+        ax.set_title(f'Heatmap after {q_learning.stop_points[i]} steps')
 
     for i in range(len(list_of_heatmaps), num_rows * num_cols):
         row = i // num_cols
@@ -140,19 +150,18 @@ if __name__ == "__main__":
     num_experiments = 30  # Number of experiments
     avg_rewards = []
     run_times = []  # List to store run-times
-    heat_maps = []
+    # heat_maps = []
     for _ in tqdm(range(num_experiments)):
         q_learning.q_table = np.zeros((100, 4))
-        rewards_per_experiment, runtime_per_experiment = q_learning.run(starting_state=1, num_steps=20000)
+        rewards_per_experiment, runtime_per_experiment, heat_maps  = q_learning.run(starting_state= 1, num_steps= 20000, random_action= False)
         avg_rewards.append(rewards_per_experiment)
         run_times.append(runtime_per_experiment)
-        heat_maps.append(q_learning.q_table)
+        # heat_maps.append(q_learning.q_table)
 
     # Plot heatmaps
     plot_heatmaps(heat_maps)
 
     avg_rewards = np.array(avg_rewards)
-    print(avg_rewards)
     # Calculate the mean and standard deviation along the experiments axis
     mean_rewards = np.mean(avg_rewards, axis=0)
     std_dev_rewards = np.std(avg_rewards, axis=0)
