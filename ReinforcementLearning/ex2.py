@@ -20,6 +20,7 @@ class QLearning:
         self.q_table = np.zeros((num_states, num_actions))
         self.stop_points = [100, 200, 500, 600, 700, 800, 900, 1000, 2500,
                              5000, 7500, 10000, 12500, 15000, 17500, 20000]
+        self.greed = 0.9
 
     def state_transition(self, state, action):
         if action == Actions.RIGHT and state % 10 != 0:
@@ -50,8 +51,8 @@ class QLearning:
     def find_best_action(self, state):
         return np.argmax(self.q_table[state, :])
 
-    def choose_action(self, state, greed= 0.1):
-        if random.random() < greed:
+    def choose_action(self, state):
+        if random.random() > self.greed:
             return random.randint(0, self.num_actions - 1)  # Explore
         else:
             max_q_value = np.max(self.q_table[state -1, :])
@@ -67,6 +68,7 @@ class QLearning:
     def run(self, starting_state=1, num_steps=1000, update=True, random_action=True):
         reward = 0
         state = starting_state
+        self.greed = 0.3
         heat_maps = []
         run_times = []  # List to store run-times
         rewards_per_experiment = []
@@ -81,6 +83,8 @@ class QLearning:
             if update:
                 self.update_q_table(state - 1, action, next_state - 1, reward)
             state = next_state
+            if num_step/num_steps > 0.3:
+                self.greed = num_step/num_steps
             if num_step in self.stop_points:
                 avg_reward = q_learning.test()
                 rewards_per_experiment.append(avg_reward)
@@ -125,7 +129,7 @@ def create_heatmap(heat_map, ax):
     ax.set_yticks(np.arange(0, 10))
     ax.grid(visible=True, linestyle='--', alpha=0.5)
 
-def plot_heatmaps(list_of_heatmaps, num_rows=4, num_cols=4):
+def plot_heatmaps(list_of_heatmaps, num_rows= 4, num_cols= 4):
     fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 12))
 
     for i, heatmap in enumerate(list_of_heatmaps):
@@ -173,7 +177,6 @@ if __name__ == "__main__":
     ax1.errorbar(q_learning.stop_points, mean_rewards, yerr=std_dev_rewards, marker='o', linestyle='-')
     ax1.set_xlabel('Steps')
     ax1.set_ylabel('Average Reward')
-    # ax1.set_ylim(-0.0001, 0.0001)
     ax1.set_title('Steps vs. Average Reward')
     ax1.grid(visible=True, linestyle='--', alpha=0.5)
 
